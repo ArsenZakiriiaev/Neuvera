@@ -43,7 +43,8 @@ def _extract_hand_landmarks_with_optical_flow(path: str | Path) -> HandVideoSamp
     if not capture.isOpened():
         raise ValueError("Could not open hand video file.")
 
-    fps = float(capture.get(cv2.CAP_PROP_FPS) or 30.0)
+    raw_fps = float(capture.get(cv2.CAP_PROP_FPS) or 0.0)
+    fps = raw_fps if 5.0 <= raw_fps <= 120.0 else 30.0
     tracked_frames: list[np.ndarray] = []
     detection_frames = 0
 
@@ -183,7 +184,7 @@ def _extract_hand_landmarks_with_optical_flow(path: str | Path) -> HandVideoSamp
     landmarks = np.stack(padded_frames, axis=0)
     effective_fps = fps / frame_step
     tracked_ratio = detection_frames / max(raw_frame_index // frame_step + 1, 1)
-    detection_rate = tracked_ratio * 0.75
+    detection_rate = tracked_ratio * 0.9
     visible_point_ratio = float(np.mean(np.isfinite(landmarks[..., :2])))
     return HandVideoSample(
         landmarks=landmarks,

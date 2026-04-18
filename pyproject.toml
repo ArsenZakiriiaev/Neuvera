@@ -24,6 +24,12 @@ video = [
 dev = [
   "pytest>=8.0"
 ]
+api = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "python-multipart>=0.0.9",
+  "sqlalchemy>=2.0"
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

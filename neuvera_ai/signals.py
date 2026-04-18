@@ -55,6 +55,26 @@ SIGNAL_CATALOG: dict[str, tuple[str, str]] = {
         "Posture irregularity",
         "Body alignment changed in a way that suggests posture-related motor irregularity.",
     ),
+    "stooped_posture": (
+        "Stooped posture",
+        "The head sat lower relative to the shoulders than expected for an upright stance.",
+    ),
+    "head_tilt": (
+        "Lateral head tilt",
+        "The head was tilted sideways by a larger angle than expected for an upright stance.",
+    ),
+    "head_tremor": (
+        "Head tremor",
+        "Small rhythmic head movements were observed across the tracked frames.",
+    ),
+    "amplitude_instability_detected": (
+        "Amplitude instability (shimmer)",
+        "Cycle-to-cycle loudness fluctuations were higher than expected for a steady reading voice.",
+    ),
+    "breathy_voice_quality": (
+        "Breathy / noisy voice quality",
+        "The voice spectrum was flatter / noisier than a clear phonation, a Parkinson's-related voice sign.",
+    ),
     "poor_audio_quality": (
         "Poor audio quality",
         "The recording quality was too weak for a stable voice estimate.",

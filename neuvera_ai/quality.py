@@ -77,19 +77,19 @@ def assess_video_quality(
 ) -> VideoQualityResult:
     duration_seconds = frame_count / max(fps, 1e-6)
     reasons: list[str] = []
-    if frame_count < 12:
+    if frame_count < 8:
         reasons.append("too_few_frames")
-    if duration_seconds < 2.0:
+    if duration_seconds < 1.5:
         reasons.append("video_too_short")
-    if detection_rate < 0.35:
+    if detection_rate < 0.2:
         reasons.append("low_detection_rate")
-    if visible_point_ratio < 0.35:
+    if visible_point_ratio < 0.2:
         reasons.append("low_landmark_visibility")
 
     quality_score = clamp01(
-        0.30 * clamp01(duration_seconds / 8.0)
-        + 0.40 * clamp01((detection_rate - 0.2) / 0.8)
-        + 0.30 * clamp01((visible_point_ratio - 0.2) / 0.8)
+        0.30 * clamp01(duration_seconds / 6.0)
+        + 0.40 * clamp01((detection_rate - 0.1) / 0.7)
+        + 0.30 * clamp01((visible_point_ratio - 0.1) / 0.7)
     )
 
     return VideoQualityResult(

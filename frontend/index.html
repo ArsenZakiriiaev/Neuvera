@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neuvera — Early Parkinson's Screening</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand" data-nav="home">Neuvera</div>
+  <nav>
+    <a data-nav="home">Home</a>
+    <a data-nav="history">History</a>
+  </nav>
+</header>
+
+<main id="app">
+  <!-- Home view -->
+  <section data-view="home" class="view">
+    <h1>Early Parkinson's Screening</h1>
+    <p class="lead">Neuvera is a screening and risk-estimation tool. It is <strong>not a diagnosis</strong> and does not replace a clinical evaluation.</p>
+    <p>Three short tests: voice, hand tremor, and movement. Takes about 2 minutes.</p>
+    <button class="primary" data-nav="test">Start Test</button>
+  </section>
+
+  <!-- Test orchestrator -->
+  <section data-view="test" class="view hidden">
+    <h2 id="step-title">Step 1 of 3 — Voice Test</h2>
+    <p id="step-desc"></p>
+
+    <div id="reading-box" class="reading-box hidden">
+      <div class="reading-label">Read this sentence aloud at a natural pace:</div>
+      <div id="reading-sentence" class="reading-sentence"></div>
+    </div>
+
+    <div class="capture">
+      <div class="stage">
+        <video id="preview" autoplay muted playsinline></video>
+        <canvas id="overlay" class="overlay hidden"></canvas>
+      </div>
+      <div class="controls">
+        <button id="btn-start" class="primary">Start recording</button>
+        <button id="btn-stop" class="danger hidden">Stop</button>
+        <span id="timer">0s</span>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+  </section>
+
+  <!-- Result view -->
+  <section data-view="result" class="view hidden">
+    <h2>Your screening result</h2>
+    <div id="result-content"></div>
+    <div class="disclaimer">
+      Neuvera is an early screening and monitoring support tool. It is designed to flag possible
+      Parkinson's-related warning signs, not to diagnose Parkinson's disease or replace clinical evaluation.
+    </div>
+    <button class="primary" data-nav="home">Back to home</button>
+    <button data-nav="history">See history</button>
+  </section>
+
+  <!-- History view -->
+  <section data-view="history" class="view hidden">
+    <h2>Test history</h2>
+    <div id="history-list">Loading…</div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

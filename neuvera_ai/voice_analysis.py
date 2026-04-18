@@ -96,37 +96,65 @@ def analyze_voice_waveform(
 
     pitch_median = float(np.median(valid_pitch)) if valid_pitch.size else 0.0
     pitch_variation = safe_ratio(float(np.std(valid_pitch)), pitch_median)
+    # Jitter: cycle-to-cycle relative change in f0 (voiced frames only).
+    if valid_pitch.size > 2:
+        jitter = float(np.mean(np.abs(np.diff(valid_pitch))) / max(np.mean(valid_pitch), 1e-6))
+    else:
+        jitter = 0.0
     pitch_instability = safe_ratio(
         float(np.std(np.diff(valid_pitch))) if valid_pitch.size > 1 else 0.0,
         pitch_median,
     )
+    # Shimmer: cycle-to-cycle relative change in amplitude on voiced frames.
+    voiced_rms = rms[voiced_mask] if np.any(voiced_mask) else rms
+    if voiced_rms.size > 2:
+        shimmer = float(np.mean(np.abs(np.diff(voiced_rms))) / max(np.mean(voiced_rms), 1e-6))
+    else:
+        shimmer = 0.0
     energy_variation = safe_ratio(float(np.std(rms)), float(np.mean(rms)), default=0.0)
     zcr = librosa.feature.zero_crossing_rate(
         y=waveform, frame_length=config.frame_length, hop_length=config.hop_length
     )[0]
     zcr_mean = float(np.mean(zcr))
+    # Harmonics-to-noise ratio proxy via spectral flatness (higher flatness = noisier voice).
+    try:
+        spectral_flatness = float(np.mean(librosa.feature.spectral_flatness(
+            y=waveform, n_fft=config.frame_length, hop_length=config.hop_length,
+        )[0]))
+    except Exception:
+        spectral_flatness = 0.0
 
-    reduced_variation_risk = clamp01((0.18 - pitch_variation) / 0.12)
-    instability_risk = clamp01((pitch_instability - 0.035) / 0.05)
-    pause_risk = clamp01((pause_ratio - 0.25) / 0.35)
-    monotone_energy_risk = clamp01((0.32 - energy_variation) / 0.18)
+    reduced_variation_risk = clamp01((0.15 - pitch_variation) / 0.10)
+    instability_risk = clamp01((pitch_instability - 0.03) / 0.045)
+    jitter_risk = clamp01((jitter - 0.012) / 0.022)
+    shimmer_risk = clamp01((shimmer - 0.06) / 0.10)
+    pause_risk = clamp01((pause_ratio - 0.30) / 0.30)
+    monotone_energy_risk = clamp01((0.30 - energy_variation) / 0.18)
     harshness_risk = clamp01((zcr_mean - 0.14) / 0.12)
+    breathiness_risk = clamp01((spectral_flatness - 0.25) / 0.25)
 
     score = float(
-        0.32 * instability_risk
-        + 0.25 * reduced_variation_risk
-        + 0.18 * pause_risk
-        + 0.15 * monotone_energy_risk
-        + 0.10 * harshness_risk
+        0.22 * jitter_risk
+        + 0.20 * shimmer_risk
+        + 0.16 * instability_risk
+        + 0.14 * reduced_variation_risk
+        + 0.12 * monotone_energy_risk
+        + 0.08 * pause_risk
+        + 0.05 * breathiness_risk
+        + 0.03 * harshness_risk
     )
 
     signals: list[str] = []
-    if instability_risk > 0.55:
+    if jitter_risk > 0.55 or instability_risk > 0.55:
         signals.append("voice_instability_detected")
+    if shimmer_risk > 0.55:
+        signals.append("amplitude_instability_detected")
     if reduced_variation_risk > 0.55:
         signals.append("reduced_voice_variation")
     if pause_risk > 0.6:
         signals.append("unusual_pause_pattern")
+    if breathiness_risk > 0.6:
+        signals.append("breathy_voice_quality")
     if harshness_risk > 0.65:
         signals.append("noisy_voice_capture")
 
@@ -149,8 +177,11 @@ def analyze_voice_waveform(
         "pause_ratio": pause_ratio,
         "pitch_variation": pitch_variation,
         "pitch_instability": pitch_instability,
+        "jitter": jitter,
+        "shimmer": shimmer,
         "energy_variation": energy_variation,
         "zcr_mean": zcr_mean,
+        "spectral_flatness": spectral_flatness,
         "audio_quality_score": quality.quality_score,
         "peak_amplitude": quality.metrics["peak_amplitude"],
         "rms_energy": quality.metrics["rms_energy"],
